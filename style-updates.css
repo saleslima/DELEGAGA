@@ -1,0 +1,64 @@
+/* Add to existing styles in the head section */
+.custom-file-input {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 10px 5px;
+}
+
+.custom-file-input:hover {
+    background-color: #e8e8e8;
+}
+
+#top-install-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #000000;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#install-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #000000;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.dark-mode #top-install-button,
+body.dark-mode #install-button {
+    background-color: #333;
+}
+
+/* Additional responsive styles for mobile */
+@media screen and (max-width: 480px) {
+    .custom-file-input, #reset-button, #generate-pdf-button, #dark-mode-toggle, #search-input {
+        font-size: 11px;
+        margin: 3px 1px;
+        padding: 2px;
+    }
+    
+    table {
+        font-size: 11px;
+    }
+    
+    td, th {
+        padding: 3px;
+    }
+}

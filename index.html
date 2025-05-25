@@ -172,7 +172,7 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background-color: #007bff;
+            background-color: #000000;
             border: none;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             cursor: pointer;
@@ -183,12 +183,12 @@
         }
         
         #install-button img {
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
         }
         
         body.dark-mode #install-button {
-            background-color: #555;
+            background-color: #000000;
         }
         
         /* Top corner install button */
@@ -203,7 +203,7 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background-color: #000000;
+            background-color: #007bff;
             border: none;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             cursor: pointer;
@@ -219,7 +219,7 @@
         }
         
         body.dark-mode #top-install-button {
-            background-color: #000000;
+            background-color: #555;
         }
         
         /* Hide bottom install button on desktop */
@@ -255,6 +255,13 @@
             background-color: #555;
             color: #fff;
         }
+        
+        .custom-file-input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>  
 </head>  
 <body>  
@@ -270,8 +277,9 @@
     <div class="developer-info">
         Desenvolvido por COPOM-SP Cb PM Sales Lima, Cb PM Pivaro Chefe Seção Sgt PM Susana, Cap PM Alexandria, Cmt Cel PM Lucena
     </div>
-    <input type="file" id="file-input" accept="application/pdf"> 
-    <button id="reset-button">Reset</button> 
+    <input type="file" id="file-input" accept="application/pdf" hidden>
+    <label for="file-input" class="custom-file-input">Adicione escala</label>
+    <button id="reset-button">Reset</button>
     <button id="generate-pdf-button">Gerar PDF</button>
     <button id="dark-mode-toggle">Modo Escuro</button>
     
