@@ -10,7 +10,8 @@
     {
       "src": "/a/4aec1ec7-eeeb-465d-98b2-0a14a8f1f8b3",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
