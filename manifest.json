@@ -1,0 +1,17 @@
+{
+  "name": "Controle EPI's COPOM-SP",
+  "short_name": "EPI's COPOM",
+  "description": "Aplicativo para controle de EPIs da Polícia Militar",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f4f4",
+  "theme_color": "#4285f4",
+  "icons": [
+    {
+      "src": "/a/4aec1ec7-eeeb-465d-98b2-0a14a8f1f8b3",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
+

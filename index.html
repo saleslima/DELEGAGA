@@ -1,0 +1,785 @@
+<html lang="pt-BR">  
+<head>  
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Controle EPI's</title>  
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#4285f4">
+    <meta name="description" content="Aplicativo para controle de EPI's">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Controle EPI's">
+    <link rel="icon" href="/a/4aec1ec7-eeeb-465d-98b2-0a14a8f1f8b3" sizes="192x192">
+    <link rel="apple-touch-icon" href="/a/4aec1ec7-eeeb-465d-98b2-0a14a8f1f8b3">
+    <link rel="manifest" href="manifest.json">
+    <style>  
+        body {  
+            font-family: Arial, sans-serif; 
+            margin: 10px; 
+            padding: 10px; 
+            background: #f4f4f4; 
+            transition: background-color 0.3s, color 0.3s;
+        }  
+        body.dark-mode {
+            background: #333;
+            color: #ffffff;
+        }
+        body.dark-mode tr td:not(.colored-background) {
+            color: #ffffff;
+        }
+        body.dark-mode tr td.colored-background {
+            color: #ffffff;
+        }
+        body.dark-mode th {
+            background-color: #555;
+            color: #fff;
+        }
+        table {  
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+        }  
+        th, td {  
+            border: 1px solid #888; 
+            padding: 8px; 
+            text-align: left; 
+        }  
+        th {  
+            background-color: #eaeaea; 
+        }  
+        #file-input, #reset-button, #generate-pdf-button, #dark-mode-toggle, #search-input {  
+            margin: 10px 5px; 
+            padding: 5px;
+        }  
+        .info {  
+            margin-top: 10px; 
+            font-weight: bold; 
+        }
+        #quantity-info {
+            display: inline-block;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+        .row-warning {
+            background-color: #ffdddd;
+        }
+        .row-success {
+            background-color: #ddffdd;
+        }
+        body.dark-mode .row-warning {
+            background-color: #ff6347;  /* Amarelo Ferrari mais escuro */
+        }
+        body.dark-mode .row-success {
+            background-color: #228B22;  /* Verde Musgo */
+        }
+        .timestamp {
+            font-size: 0.8em;
+            color: #666;
+            display: block;
+            margin-top: 5px;
+        }
+        body.dark-mode .timestamp {
+            color: #ccc;
+        }
+        .developer-info {
+            white-space: nowrap;
+            overflow: hidden;
+            animation: moveText 20s linear infinite;
+        }
+        @keyframes moveText {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* Responsiveness */
+        @media screen and (max-width: 600px) {
+            body {
+                margin: 5px;
+                padding: 5px;
+                font-size: 14px;
+            }
+            table {
+                font-size: 12px;
+            }
+            th, td {
+                padding: 4px;
+            }
+            #file-input, #reset-button, #generate-pdf-button, #dark-mode-toggle, #search-input {
+                margin: 5px 2px;
+                padding: 3px;
+                font-size: 12px;
+            }
+            h1 {
+                font-size: 1.2em;
+            }
+            select {
+                width: 100%;
+            }
+        }
+
+        /* Modal styles for confirmation */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .modal-buttons button {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        body.dark-mode .modal-content {
+            background-color: #444;
+            color: #fff;
+        }
+
+        /* Install button styles */
+        #install-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        #install-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #007bff;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #install-button img {
+            width: 30px;
+            height: 30px;
+        }
+        
+        body.dark-mode #install-button {
+            background-color: #555;
+        }
+        
+        /* Toast notification */
+        #toast {
+            visibility: hidden;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            z-index: 1;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+        
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        body.dark-mode #toast {
+            background-color: #555;
+            color: #fff;
+        }
+    </style>  
+</head>  
+<body>  
+    <h1>Controle EPI's</h1>  
+    <div class="developer-info">
+        Desenvolvido por COPOM-SP Cb PM Sales Lima, Cb PM Pivaro Chefe Seção Sgt PM Susana, Cap PM Alexandria, Cmt Cel PM Lucena
+    </div>
+    <input type="file" id="file-input" accept="application/pdf"> 
+    <button id="reset-button">Reset</button> 
+    <button id="generate-pdf-button">Gerar PDF</button>
+    <button id="dark-mode-toggle">Modo Escuro</button>
+    
+    <input type="text" id="search-input" placeholder="Buscar por RE">
+    
+    <div class="info-container">
+        <span id="quantity-info"></span>
+        <span id="epi-summary"></span>
+    </div>
+    <div class="info" id="info"></div> 
+    <table id="output">
+        <thead>
+            <tr>
+                <th>Posto/Graduação</th>
+                <th>Nome</th>
+                <th>RE</th>
+                <th>EPI</th>
+                <th>Entregue</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table> 
+
+    <!-- Reset Confirmation Modal -->
+    <div id="resetModal" class="modal">
+        <div class="modal-content">
+            <h2>Confirmação de Reset</h2>
+            <p>Tem certeza que deseja resetar? Esta ação excluirá todos os dados salvos.</p>
+            <div class="modal-buttons">
+                <button id="confirmReset">Sim, resetar</button>
+                <button id="cancelReset">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Install PWA Button -->
+    <div id="install-container">
+        <button id="install-button" title="Instalar aplicativo">
+            <img src="/a/4aec1ec7-eeeb-465d-98b2-0a14a8f1f8b3" alt="Instalar App">
+        </button>
+    </div>
+    
+    <!-- Toast notification -->
+    <div id="toast">Para instalar: Clique em "Adicionar à tela inicial"</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.20/jspdf.plugin.autotable.min.js"></script>
+    <script>  
+        const fileInput = document.getElementById('file-input');  
+        const resetButton = document.getElementById('reset-button');  
+        const generatePdfButton = document.getElementById('generate-pdf-button');  
+        const outputTable = document.getElementById('output');  
+        const infoDiv = document.getElementById('info');  
+        const quantityInfoSpan = document.getElementById('quantity-info');
+        const epiSummarySpan = document.getElementById('epi-summary');
+        const searchInput = document.getElementById('search-input');
+
+        // Add modal references
+        const resetModal = document.getElementById('resetModal');
+        const confirmResetBtn = document.getElementById('confirmReset');
+        const cancelResetBtn = document.getElementById('cancelReset');
+
+        // Enhanced persistency of data
+        let loadedData = JSON.parse(localStorage.getItem('pdfData')) || [];
+        let savedSelections = JSON.parse(localStorage.getItem('savedSelections')) || {};
+        let pdfQuantity = localStorage.getItem('pdfQuantity') || '';
+
+        // Enhanced search functionality
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.toLowerCase();
+            const rows = outputTable.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const reCell = row.querySelector('td:nth-child(3)'); // RE column
+                if (reCell) {
+                    const re = reCell.textContent.toLowerCase();
+                    row.style.display = re.includes(searchTerm) ? '' : 'none';
+                }
+            });
+        });
+
+        function updateEPISummary(data) {
+            let summary = {
+                colete: 0,
+                tonfa: 0,
+                pendentes: 0
+            };
+
+            data.forEach(record => {
+                const selection = savedSelections[record.re] || {};
+                
+                if (selection.epi !== "Escolha") {
+                    switch(selection.epi) {
+                        case 'colete':
+                            summary.colete++;
+                            break;
+                        case 'tonfa':
+                            summary.tonfa++;
+                            break;
+                        case 'ambos':
+                            summary.colete++;
+                            summary.tonfa++;
+                            break;
+                    }
+
+                    // Subtract when delivered
+                    if (selection.entregue === 'sim') {
+                        switch(selection.epi) {
+                            case 'colete':
+                                summary.colete--;
+                                break;
+                            case 'tonfa':
+                                summary.tonfa--;
+                                break;
+                            case 'ambos':
+                                summary.colete--;
+                                summary.tonfa--;
+                                break;
+                        }
+                    }
+                }
+            });
+
+            // Count pendentes by red rows (EPI selected but not delivered)
+            const warningRows = document.querySelectorAll('.row-warning');
+            summary.pendentes = warningRows.length;
+
+            // Ensure no negative values
+            summary.colete = Math.max(0, summary.colete);
+            summary.tonfa = Math.max(0, summary.tonfa);
+
+            // Update summary display
+            epiSummarySpan.textContent = 
+                `Coletes: ${summary.colete} | Tonfas: ${summary.tonfa} | Pendentes: ${summary.pendentes}`;
+            
+            // Persist summary
+            localStorage.setItem('epiSummary', JSON.stringify(summary));
+        }
+
+        function renderTable(data) {
+            const tableBody = outputTable.querySelector('tbody');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            data.forEach((row) => {
+                const tableRow = document.createElement('tr');
+                tableRow.dataset.re = row.re;
+
+                // Create cells
+                const cells = [
+                    { value: row.posto, isText: true },
+                    { value: row.nome, isText: true },
+                    { value: row.re, isText: true },
+                    { 
+                        type: 'select', 
+                        options: ['Escolha', 'colete', 'tonfa', 'ambos'], 
+                        selected: savedSelections[row.re]?.epi || row.epi || "Escolha"
+                    },
+                    { 
+                        type: 'select', 
+                        options: ['não', 'sim'], 
+                        selected: savedSelections[row.re]?.entregue || row.entregue || "não",
+                        timestamp: savedSelections[row.re]?.timestamp || row.timestamp,
+                        disabled: (savedSelections[row.re]?.epi || row.epi) === "Escolha"
+                    }
+                ];
+
+                // Determine row class based on EPI and delivery status
+                const rowClass = cells[3].selected !== "Escolha" && cells[4].selected === "não" 
+                    ? "row-warning" 
+                    : cells[4].selected === "sim" 
+                    ? "row-success" 
+                    : "";
+                tableRow.className = rowClass;
+
+                cells.forEach((cellData, index) => {
+                    const cell = document.createElement('td');
+                    
+                    if (cellData.type === 'select') {
+                        const select = document.createElement('select');
+                        select.dataset.type = index === 3 ? 'epi' : 'entregue';
+                        select.dataset.re = row.re;
+
+                        // Disable entregue select when no EPI is chosen
+                        if (cellData.disabled) {
+                            select.disabled = true;
+                        }
+
+                        cellData.options.forEach(optionValue => {
+                            const option = document.createElement('option');
+                            option.value = optionValue;
+                            option.textContent = optionValue;
+                            option.selected = optionValue === cellData.selected;
+                            select.appendChild(option);
+                        });
+
+                        select.addEventListener('change', handleSelectionChange);
+                        cell.appendChild(select);
+
+                        // Add timestamp for entregue select
+                        if (cellData.type === 'select' && index === 4 && cellData.timestamp) {
+                            const timestampSpan = document.createElement('span');
+                            timestampSpan.className = 'timestamp';
+                            timestampSpan.textContent = cellData.timestamp;
+                            cell.appendChild(timestampSpan);
+                        }
+                    } else {
+                        cell.textContent = cellData.value;
+                        if (cellData.isText) {
+                            cell.classList.add('colored-background');
+                        }
+                    }
+
+                    tableRow.appendChild(cell);
+                });
+
+                tableBody.appendChild(tableRow);
+            });
+
+            // Update EPI summary after rendering
+            updateEPISummary(data);
+        }
+
+        function handleSelectionChange(event) {
+            const select = event.target;
+            const re = select.dataset.re;
+            const type = select.dataset.type;
+            const value = select.value;
+
+            // Update saved selections
+            savedSelections[re] = savedSelections[re] || {};
+            savedSelections[re][type] = value;
+
+            // Enable/disable corresponding select based on EPI choice
+            const row = document.querySelector(`tr[data-re="${re}"]`);
+            const epiSelect = row.querySelector('select[data-type="epi"]');
+            const entregueSelect = row.querySelector('select[data-type="entregue"]');
+
+            if (type === 'epi') {
+                // Enable/disable entregue select
+                entregueSelect.disabled = value === "Escolha";
+                if (value === "Escolha") {
+                    entregueSelect.value = "não";
+                    savedSelections[re].entregue = "não";
+                }
+            }
+
+            // Add timestamp only when entregue is changed to 'sim'
+            if (type === 'entregue' && value === 'sim') {
+                savedSelections[re].timestamp = new Date().toLocaleString('pt-BR');
+            }
+
+            // Save to localStorage
+            localStorage.setItem('savedSelections', JSON.stringify(savedSelections));
+            localStorage.setItem('pdfData', JSON.stringify(loadedData));
+
+            // Remove existing classes
+            row.classList.remove('row-warning', 'row-success');
+
+            // Apply new class based on selections
+            if (epiSelect.value !== "Escolha" && entregueSelect.value === "não") {
+                row.classList.add('row-warning');
+            } else if (entregueSelect.value === "sim") {
+                row.classList.add('row-success');
+                
+                // Update or add timestamp
+                let timestampSpan = row.querySelector('.timestamp');
+                if (!timestampSpan) {
+                    timestampSpan = document.createElement('span');
+                    timestampSpan.className = 'timestamp';
+                    entregueSelect.parentNode.appendChild(timestampSpan);
+                }
+                timestampSpan.textContent = savedSelections[re].timestamp;
+            }
+
+            // Update EPI summary
+            updateEPISummary(loadedData);
+        }
+
+        fileInput.addEventListener('change', (event) => {  
+            const file = event.target.files[0];  
+            if (file && file.type === 'application/pdf') { 
+                outputTable.querySelector('tbody').innerHTML = ''; 
+                infoDiv.textContent = 'Carregando...'; 
+                quantityInfoSpan.textContent = '';
+
+                const reader = new FileReader();  
+                reader.onload = function () {  
+                    const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(reader.result) });  
+                    loadingTask.promise.then(pdf => {  
+                        const totalPages = pdf.numPages;  
+                        let totalRecords = 0;  
+                        const pagePromises = []; 
+                        let quantityText = '';
+
+                        for (let pageNum = 1; pageNum <= totalPages; pageNum++) {  
+                            pagePromises.push(pdf.getPage(pageNum).then(page => {  
+                                return page.getTextContent().then(textContent => {  
+                                    const pageText = textContent.items.map(item => item.str).join(' ');
+                                    
+                                    const quantityMatch = pageText.match(/quantidade\s*(\d+)/i);
+                                    if (quantityMatch && !quantityText) {
+                                        quantityText = `${quantityMatch[1]}`;
+                                    }
+                                    
+                                    return pageText;  
+                                });  
+                            }));  
+                        }  
+
+                        Promise.all(pagePromises).then(pagesText => {  
+                            const records = [];
+                            const allText = pagesText.join('\n');
+                            
+                            // Updated regex to capture PM records
+                            const pmRegex = /(coronel pm|tenente coronel pm|capitao pm|tenente pm|subtenente pm|sargento pm|cabo pm|pm|soldado pm|SOLDADO PM 2. CLASSE)\s*(\d{5,6}(?:-[a-zA-Z0-9]+)?)\s*([a-zA-ZÀ-ÿ\s-]+)/gi;
+                            
+                            const matches = [...allText.matchAll(pmRegex)];
+                            
+                            matches.forEach(match => {
+                                const posto = match[1].trim();
+                                const re = match[2];
+                                let nome = match[3].trim();
+
+                                // Extra cleaning for nome
+                                nome = nome.replace(/\s+/g, ' ');
+
+                                // Preserve existing selections if record already exists
+                                const existingRecord = loadedData.find(r => r.re === re);
+
+                                // Prevent duplicate entries
+                                if (posto && re && nome && !records.some(r => r.re === re)) {
+                                    const record = {
+                                        posto,
+                                        re,
+                                        nome,
+                                        epi: existingRecord?.epi || savedSelections[re]?.epi || "Escolha",
+                                        entregue: existingRecord?.entregue || savedSelections[re]?.entregue || "não",
+                                        timestamp: existingRecord?.timestamp || savedSelections[re]?.timestamp || ""
+                                    };
+                                    records.push(record);
+                                    totalRecords++;
+                                }
+                            });
+
+                            if (records.length > 0) {
+                                infoDiv.textContent = `Quantidade de registros: ${totalRecords}`;  
+                                quantityInfoSpan.textContent = quantityText || `${totalRecords}`;
+                                renderTable(records);  
+                                
+                                // Preserve existing data in localStorage
+                                loadedData = records;
+                                localStorage.setItem('pdfData', JSON.stringify(records)); 
+                                localStorage.setItem('pdfQuantity', quantityText);
+                            } else {
+                                infoDiv.textContent = 'Nenhum registro encontrado. Verifique o PDF.';
+                            }
+                        }).catch(err => {
+                            console.error('Erro ao processar texto do PDF:', err);
+                            infoDiv.textContent = 'Erro ao processar PDF. Verifique o arquivo.';
+                        });  
+                    }).catch(err => {
+                        console.error('Erro ao carregar o PDF:', err);
+                        infoDiv.textContent = 'Erro ao carregar PDF. Tente novamente.';
+                    });  
+                };  
+                reader.readAsArrayBuffer(file);  
+            } else {  
+                alert("Por favor, carregue um arquivo PDF.");  
+            }  
+        });
+
+        // Generate PDF function
+        generatePdfButton.addEventListener('click', () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l'); // Landscape orientation
+            
+            const headerLines = [
+                `Registros: ${loadedData.length}`,
+                `${quantityInfoSpan.textContent}`,
+                `${epiSummarySpan.textContent}`
+            ];
+
+            doc.setFontSize(10);
+            headerLines.forEach((line, index) => {
+                if (line) {
+                    doc.text(line, 10, 10 + (index * 7));
+                }
+            });
+
+            const tableCols = ['Posto/Graduação', 'Nome', 'RE', 'EPI', 'Entregue', 'Data Entrega'];
+            const tableData = loadedData.map(record => {
+                // Get current values from the table
+                const row = document.querySelector(`tr[data-re="${record.re}"]`);
+                const epiSelect = row.querySelector('select[data-type="epi"]');
+                const entregueSelect = row.querySelector('select[data-type="entregue"]');
+                const timestampSpan = row.querySelector('.timestamp');
+
+                return [
+                    record.posto, 
+                    record.nome,
+                    record.re, 
+                    epiSelect.value, 
+                    entregueSelect.value,
+                    timestampSpan ? timestampSpan.textContent : ''
+                ];
+            });
+
+            doc.autoTable({
+                startY: 40,  // Adjust based on number of header lines
+                head: [tableCols],
+                body: tableData,
+                theme: 'striped'
+            });
+
+            doc.save('registros_epi.pdf');
+        });
+
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const body = document.body;
+
+        // Load dark mode preference from localStorage
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            body.classList.add('dark-mode');
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            
+            // Update button text based on current mode
+            darkModeToggle.textContent = body.classList.contains('dark-mode') 
+                ? 'Modo Claro' 
+                : 'Modo Escuro';
+            
+            // Save preference to localStorage
+            if (body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                localStorage.removeItem('darkMode');
+            }
+        });
+
+        // On page load, set initial button text
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            body.classList.add('dark-mode');
+            darkModeToggle.textContent = 'Modo Claro';
+        }
+
+        // Modify reset button to show modal instead of direct action
+        resetButton.addEventListener('click', () => {
+            resetModal.style.display = 'flex';
+        });
+
+        // Confirm reset action
+        confirmResetBtn.addEventListener('click', () => {
+            // Clear all localStorage items
+            localStorage.removeItem('pdfData');
+            localStorage.removeItem('savedSelections');
+            localStorage.removeItem('pdfQuantity');
+            localStorage.removeItem('epiSummary');
+            localStorage.removeItem('darkMode');
+
+            // Clear table and info
+            outputTable.querySelector('tbody').innerHTML = ''; 
+            infoDiv.textContent = 'Todos os dados foram apagados com sucesso!'; 
+            quantityInfoSpan.textContent = '';
+            epiSummarySpan.textContent = '';
+            fileInput.value = ''; 
+
+            // Reset variables
+            loadedData = [];
+            savedSelections = {};
+            pdfQuantity = '';
+
+            // Hide modal
+            resetModal.style.display = 'none';
+
+            // Optional: Reload page after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        });
+
+        // Cancel reset action
+        cancelResetBtn.addEventListener('click', () => {
+            resetModal.style.display = 'none';
+        });
+
+        // Close modal if clicked outside
+        resetModal.addEventListener('click', (event) => {
+            if (event.target === resetModal) {
+                resetModal.style.display = 'none';
+            }
+        });
+
+        // If data exists in localStorage, render it
+        if (loadedData.length > 0) {
+            renderTable(loadedData);
+            infoDiv.textContent = `Quantidade de registros: ${loadedData.length}`;
+            quantityInfoSpan.textContent = pdfQuantity;
+            
+            // Restore selections and update summary
+            updateEPISummary(loadedData);
+        }
+
+        // PWA Installation Logic
+        let deferredPrompt;
+        const installContainer = document.getElementById('install-container');
+        const installButton = document.getElementById('install-button');
+        const toast = document.getElementById('toast');
+        
+        // Check if service worker is supported
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker registered'))
+                .catch(err => console.error('Service Worker registration failed:', err));
+            });
+        }
+        
+        // Listen for the beforeinstallprompt event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent Chrome 67 and earlier from automatically showing the prompt
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            // Show the install button
+            installContainer.style.display = 'block';
+        });
+        
+        // Installation button click handler
+        installButton.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                // Show the install prompt
+                deferredPrompt.prompt();
+                // Wait for the user to respond to the prompt
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to the install prompt: ${outcome}`);
+                // We've used the prompt, and can't use it again, discard it
+                deferredPrompt = null;
+                // Hide the install button
+                installContainer.style.display = 'none';
+            } else {
+                // Show toast with instructions for iOS
+                toast.className = "show";
+                setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 5000);
+            }
+        });
+        
+        // Hide button when app is installed
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('App was installed');
+            installContainer.style.display = 'none';
+        });
+    </script>  
+</body>  
+</html>
